@@ -8,6 +8,9 @@ application.pid
 .mtj.tmp/
 .idea/
 
+# person shell
+person/
+
 # Package Files #
 *.jar
 *.war
