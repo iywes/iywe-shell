@@ -26,3 +26,39 @@ function cherryWithNewBranch() {
     # 5. cherry-pick 指定commit
     git cherry-pick $2
 }
+
+:'
+清理git本地分支
+'
+function cleanLocalBranch() {
+  # 1. 当前不能删除的分支
+  notDeleteBranches=(`git branch --show-current` 'master' 'main' 'release'
+   'develop_monthly_first' 'develop_monthly_mid' 'develop_monthly_third' 'develop_monthly_dev')
+  # 2. 计算要删除的本地分支
+  branches=()
+      while IFS= read -r -d $'\n' line; do
+          # 提取分支名（去除当前分支标记*和首尾空格）
+          branch_name=$(sed -E 's/^\*?[[:space:]]+//' <<< "$line")
+          # 过滤掉空行和 detached HEAD 行
+          flag=0
+          for notDelete in $notDeleteBranches; do
+              if [[ $notDelete == $branch_name ]]; then
+                flag=1
+              fi
+          done
+          if [[ $flag == 0 ]]; then
+            branches+=("$branch_name")
+          fi
+      done < <(git branch --no-color 2>/dev/null)
+  echo "$branches"
+  # 3. 删除本地分支
+  for branch in $branches; do
+    `git branch -d $branch`
+    if [[ $? == 0 ]]; then
+      echo "delete branch $branch success"
+    else
+      echo "delete branch $branch fail"
+    fi
+  done;
+}
+
